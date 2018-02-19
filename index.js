@@ -11,8 +11,8 @@ var router = express.Router()
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "",
-  // password: "Sdzc@123sd",
+  //password: "",
+  password: "Sdzc@123sd",
   database: "themepark"
 });
 
@@ -47,6 +47,8 @@ app.get('/', function (req, res) {
     })
   })
 });
+
+// var query = "SELECT tbl_ride.ride_id, tbl_ride.ride_name, tbl_ride.ride_wait_time, tbl_park.park_name FROM tbl_ride INNER JOIN tbl_park ON tbl_ride.park_id = tbl_park.park_id where tbl_ride.park_id =" + req.params.id
 
 app.get('/ride/:id', function (req, res) {
   var query = "SELECT tbl_ride.ride_id, tbl_ride.ride_name, tbl_ride.ride_wait_time, tbl_park.park_name FROM tbl_ride INNER JOIN tbl_park ON tbl_ride.park_id = tbl_park.park_id where tbl_ride.park_id =" + req.params.id
