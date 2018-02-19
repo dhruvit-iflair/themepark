@@ -1,0 +1,43 @@
+html
+    head
+        title  Park list
+        link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
+    body
+        br
+        .container.col-lg-10.col-md-offset-1
+            table.table.table-hover.table-bordered
+                thead
+                    tr
+                        th  Park Id
+                        th  Park Name
+                        th  Park Apiname
+                        th  Park Type
+                        th  Park Opening time
+                        th  Park Closing time
+                        th  Action
+                tbody
+                    each doc, i in docs
+                        tr
+                            td=  doc.park_id
+                            td=  doc.park_name
+                            td=  doc.park_apiname
+                            if(doc.park_type == null)
+                                td  N/A
+                            else
+                                td=  doc.park_type
+                            if(doc.park_opening_time == null)
+                                td  N/A
+                            else
+                                td=  moment(doc.park_opening_time).format('DD.MM.YYYY hh:mm:s')
+                            if(doc.park_closing_time == null)
+                                td  N/A
+                            else
+                                td=  moment(doc.park_closing_time).format('DD.MM.YYYY hh:mm:s')
+                            td
+                                if(~rides.indexOf(doc.park_id))
+                                    a(href="/ride/"+doc.park_id) Get Rides
+                                else    
+                                    p No rides available
+        
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js")
+        script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js")

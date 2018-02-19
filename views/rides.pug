@@ -1,0 +1,41 @@
+html
+    head
+        //- title=  docs[0].park_name
+        link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css")
+    body
+        br
+        .container.col-lg-10.col-md-offset-1
+            table.table.table-striped.table-hover.table-bordered(id="table")
+                thead
+                    tr
+                        th  Sr. No
+                        th  Ride Name
+                        th  Ride Waittime
+                tbody
+                    if(docs.length > 0)
+                        -for (var i = 0, doc; doc = docs[i++];)
+                            tr
+                                td=  i
+                                if(doc.ride_name == "" || null)
+                                    td  N/A
+                                else
+                                    td=  doc.ride_name
+                                td=  doc.ride_wait_time
+                    else
+                        h4 Nothing to display        
+
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js")
+        script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js")
+        //- script(src='https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css')
+        //- script(src='https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js')
+        //- script.
+        //-     $(function() {
+        //-         $('#table').DataTable({
+        //-             "bFilter": false,
+        //-             "bInfo": false
+        //-             "bPaginate": false,
+        //-             "language": {
+        //-                 "emptyTable":     "My Custom Message On Empty Table"
+        //-             }
+        //-         });
+        //-     } );
