@@ -11,7 +11,8 @@ var router = express.Router()
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "",
+  // password: "",
+  password: "Sdzc@123sd",
   database: "themepark"
 });
 
