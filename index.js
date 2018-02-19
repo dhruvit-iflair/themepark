@@ -49,7 +49,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/ride/:id', function (req, res) {
-  var query = "SELECT tbl_ride.ride_id, tbl_ride.ride_name, tbl_ride.ride_wait_time, tbl_park.park_name FROM tbl_ride INNER JOIN tbl_park ON tbl_ride.park_id = tbl_park.park_id where tbl_ride.park_id =" + req.params.id + " GROUP BY tbl_ride.ride_name "
+  var query = "SELECT tbl_ride.ride_id, tbl_ride.ride_name, tbl_ride.ride_wait_time, tbl_park.park_name FROM tbl_ride INNER JOIN tbl_park ON tbl_ride.park_id = tbl_park.park_id where tbl_ride.park_id =" + req.params.id
   con.query(query, function (err, result) {
     if (err) return res.send(err);
     res.render('rides', {
