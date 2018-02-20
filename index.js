@@ -11,8 +11,8 @@ var router = express.Router()
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  //password: "",
-  password: "Sdzc@123sd",
+  password: "",
+  // password: "Sdzc@123sd",
   database: "themepark"
 });
 
@@ -30,7 +30,8 @@ app.set('view engine', 'pug')
 
 app.get('/', function (req, res) {
   var all = []
-  var query = "SELECT * FROM tbl_park";
+  var query = "SELECT * FROM tbl_park WHERE park_name LIKE '%Disney%'";
+  // var query = "SELECT * FROM tbl_park";
   con.query(query, function (err, result) {
     if (err) return console.log("Error fetching rides");
     con.query("SELECT park_id from tbl_ride", function (err, rides) {
