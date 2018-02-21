@@ -1,3 +1,6 @@
+// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+var Themeparks = require("themeparks");
 var express = require('express');
 var bodyParser = require('body-parser')
 var Themeparks = require("themeparks");
@@ -28,10 +31,22 @@ app.locals.moment = require('moment')
 app.set('views', './views')
 app.set('view engine', 'pug')
 
+// Testing
+// app.get('/reed', (req, res) => {
+//   var disneyMagicKingdom = new Themeparks.Parks.TokyoDisneyResortMagicKingdom();
+//   disneyMagicKingdom.GetWaitTimes().then(function (rides) {
+//     res.send(rides)
+//     for (var i = 0, ride; ride = rides[i++];) {
+//       console.log(ride.name + ": " + ride.waitTime + " minutes wait");
+//     }
+//   }, (err) => {
+//     res.send(err)
+//   });
+// })
+
 app.get('/', function (req, res) {
   var all = []
   var query = "SELECT * FROM tbl_park WHERE park_name LIKE '%Disney%'";
-  // var query = "SELECT * FROM tbl_park";
   con.query(query, function (err, result) {
     if (err) return console.log("Error fetching rides");
     con.query("SELECT park_id from tbl_ride", function (err, rides) {
@@ -49,8 +64,6 @@ app.get('/', function (req, res) {
   })
 });
 
-// var query = "SELECT tbl_ride.ride_id, tbl_ride.ride_name, tbl_ride.ride_wait_time, tbl_park.park_name FROM tbl_ride INNER JOIN tbl_park ON tbl_ride.park_id = tbl_park.park_id where tbl_ride.park_id =" + req.params.id
-
 app.get('/ride/:id', function (req, res) {
   var query = "SELECT tbl_ride.ride_id, tbl_ride.ride_name, tbl_ride.ride_wait_time, tbl_park.park_name FROM tbl_ride INNER JOIN tbl_park ON tbl_ride.park_id = tbl_park.park_id where tbl_ride.park_id =" + req.params.id
   con.query(query, function (err, result) {
@@ -67,7 +80,6 @@ app.post('/insertRide', function (req, res) {
     var parkapiname = [];
     var parkid = [];
     var k = 0;
-
     result.forEach(element => {
       var disneyMagicKingdom = new Themeparks.Parks[element.park_apiname]();
       disneyMagicKingdom.GetWaitTimes().then((rides) => {
