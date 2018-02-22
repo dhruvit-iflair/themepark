@@ -5,10 +5,11 @@ var express = require('express');
 var bodyParser = require('body-parser')
 var Themeparks = require("themeparks");
 var mysql = require('mysql');
-var dateTime = require('node-datetime');
-var dt = dateTime.create();
-var formatted = dt.format('Y-m-d');
 var router = express.Router()
+
+var app = express();
+var server = app.listen(3000);
+var io = require('socket.io').listen(server);
 
 // SQL Connection
 var con = mysql.createConnection({
@@ -24,12 +25,12 @@ con.connect(function (err) {
   console.log("Connected!");
 });
 
-var app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.locals.moment = require('moment')
 app.set('views', './views')
-app.set('view engine', 'pug')
+app.set('view engine', 'pug');
+
 
 app.get('/', function (req, res) {
   var all = []
@@ -61,48 +62,61 @@ app.get('/ride/:id', function (req, res) {
   })
 })
 
-con.query("SELECT * FROM tbl_park", function (err, result, fields) {
-  if (err) return err;
-  if (result.length > 0) {
-    con.query('SELECT * FROM tbl_ride', (err, rideData) => {
-      if (err) return err;
-      if (rideData.length > 0) {
-        result.forEach(element => {
-          var disneyMagicKingdom = new Themeparks.Parks[element.park_apiname]();
-          disneyMagicKingdom.GetWaitTimes().then((rides) => {
-            for (var j = 0, ride; ride = rides[j++];) {
-              var index = rideData.findIndex(x => x.ride_name.replace(/[^\w\s]/gi, '') == ride.name.replace(/[^\w\s]/gi, ''))
-              if (index < 0) {
+var callParks = function () {
+  con.query("SELECT * FROM tbl_park", function (err, result, fields) {
+    if (err) return err;
+    if (result.length > 0) {
+      con.query('SELECT * FROM tbl_ride', (err, rideData) => {
+        if (err) return err;
+        if (rideData.length > 0) {
+          result.forEach(element => {
+            var disneyMagicKingdom = new Themeparks.Parks[element.park_apiname]();
+            disneyMagicKingdom.GetWaitTimes().then((rides) => {
+              for (var j = 0, ride; ride = rides[j++];) {
+                var index = rideData.findIndex(x => x.ride_name.replace(/[^\w\s]/gi, '') == ride.name.replace(/[^\w\s]/gi, ''))
+                if (index < 0) {
+                  var sql = "INSERT INTO tbl_ride(park_id,ride_name,ride_wait_time) VALUES ('" + element.park_id + "','" + ride.name.replace(/[^\w\s]/gi, '') + "','" + ride.waitTime + "')";
+                  con.query(sql, function (err, result) {
+                    if (err) throw err;
+                    console.log(result.affectedRows + " rides(s) added");
+                    io.sockets.emit('updatePark');
+                  });
+                } else {
+                  if (rideData[index].ride_wait_time != ride.waitTime) {
+                    var que = "UPDATE tbl_ride SET ride_wait_time = " + (isNaN(ride.waitTime) ? null : ride.waitTime) + " WHERE ride_id =" + rideData[index].ride_id;
+                    con.query(que, function (err, rideResult) {
+                      if (err) throw err;
+                      console.log(rideResult.affectedRows + " ride wait-time updated");
+                      io.sockets.emit('updateTime');
+                    });
+                  }
+                }
+              }
+            }, (err) => {
+              console.log("No ride to add")
+            })
+          });
+        } else {
+          result.forEach(element => {
+            var disneyMagicKingdom = new Themeparks.Parks[element.park_apiname]();
+            disneyMagicKingdom.GetWaitTimes().then((rides) => {
+              for (var j = 0, ride; ride = rides[j++];) {
                 var sql = "INSERT INTO tbl_ride(park_id,ride_name,ride_wait_time) VALUES ('" + element.park_id + "','" + ride.name.replace(/[^\w\s]/gi, '') + "','" + ride.waitTime + "')";
                 con.query(sql, function (err, result) {
                   if (err) throw err;
-                  console.log(result.affectedRows + " record(s) updated");
+                  console.log(result.affectedRows + " record(s) inserted");
                 });
               }
-            }
-          }, (err) => {
-            console.log("No ride found here")
-          })
-        });
-      } else {
-        result.forEach(element => {
-          var disneyMagicKingdom = new Themeparks.Parks[element.park_apiname]();
-          disneyMagicKingdom.GetWaitTimes().then((rides) => {
-            for (var j = 0, ride; ride = rides[j++];) {
-              var sql = "INSERT INTO tbl_ride(park_id,ride_name,ride_wait_time) VALUES ('" + element.park_id + "','" + ride.name.replace(/[^\w\s]/gi, '') + "','" + ride.waitTime + "')";
-              con.query(sql, function (err, result) {
-                if (err) throw err;
-                console.log(result.affectedRows + " record(s) inserted");
-              });
-            }
-          }, (err) => {
-            console.log("No ride found")
-          })
-        });
-      }
-    })
-  }
-});
+            }, (err) => {
+              console.log("No ride found")
+            })
+          });
+        }
+      })
+    }
+    io.sockets.emit('updatePark');
+  });
+}
 
-app.listen(3000);
-console.log("Express server listening on port 3000");
+callParks();
+setInterval(callParks, 300000);

@@ -10,7 +10,7 @@ html
                     tr
                         th  Sr. No
                         th  Ride Name
-                        th  Ride Waittime
+                        th  Ride Wait Time (In Mins)
                 tbody
                     if(docs.length > 0)
                         -for (var i = 0, doc; doc = docs[i++];)
@@ -24,18 +24,11 @@ html
                     else
                         h4 Nothing to display        
 
+        script(src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js")
         script(src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js")
         script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js")
-        //- script(src='https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css')
-        //- script(src='https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js')
-        //- script.
-        //-     $(function() {
-        //-         $('#table').DataTable({
-        //-             "bFilter": false,
-        //-             "bInfo": false
-        //-             "bPaginate": false,
-        //-             "language": {
-        //-                 "emptyTable":     "My Custom Message On Empty Table"
-        //-             }
-        //-         });
-        //-     } );
+        script.
+            var socket = io();
+            socket.on('updateTime', function (data) {
+                window.location.reload()
+            });
