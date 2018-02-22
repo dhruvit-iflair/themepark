@@ -85,7 +85,8 @@ var callParks = function () {
                   });
                 } else {
                   if (rideData[index].ride_wait_time != ride.waitTime) {
-                    var que = "UPDATE tbl_ride SET ride_wait_time = " + (isNaN(ride.waitTime) ? null : ride.waitTime) + " WHERE ride_id =" + rideData[index].ride_id;
+                    var que = "UPDATE tbl_ride SET ride_wait_time = " + (isNaN(ride.waitTime) ? 0 : ride.waitTime) + " WHERE ride_id =" + rideData[index].ride_id;
+                    console.log(que)
                     con.query(que, function (err, rideResult) {
                       if (err) throw err;
                       console.log(rideResult.affectedRows + " ride wait-time updated");
