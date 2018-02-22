@@ -8,15 +8,17 @@ var mysql = require('mysql');
 var router = express.Router()
 
 var app = express();
-var server = app.listen(3000);
-var io = require('socket.io').listen(server);
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+// var server = app.listen(3000);
+// var io = require('socket.io').listen(server);
 
 // SQL Connection
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  // password: "",
-  password: "Sdzc@123sd",
+  password: "",
+  // password: "Sdzc@123sd",
   database: "themepark"
 });
 
@@ -120,3 +122,7 @@ var callParks = function () {
 
 callParks();
 setInterval(callParks, 300000);
+
+http.listen(3000, () => {
+  console.log('Listening on *:3000')
+})
