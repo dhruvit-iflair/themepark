@@ -10,16 +10,13 @@ var router = express.Router()
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-// var server = app.listen(3000);
-// var io = require('socket.io').listen(server);
 
 // SQL Connection
 var con = mysql.createConnection({
   host: "localhost",
-  user: "root",
-  // password: "",
-  password: "Sdzc@123sd",
-  database: "themepark"
+  user: "dpwt",
+  password: "2XJw$!G&Lsup5fG",
+  database: "disneyparkswaitingtimes"
 });
 
 con.connect(function (err) {
@@ -80,7 +77,7 @@ var callParks = function () {
                   var sql = "INSERT INTO tbl_ride(park_id,ride_name,ride_wait_time) VALUES ('" + element.park_id + "','" + ride.name.replace(/[^\w\s]/gi, '') + "','" + ride.waitTime + "')";
                   con.query(sql, function (err, result) {
                     if (err) throw err;
-                    console.log(result.affectedRows + " rides(s) added");
+                    // console.log(result.affectedRows + " rides(s) added");
                     io.sockets.emit('updatePark');
                   });
                 } else {
@@ -89,14 +86,14 @@ var callParks = function () {
                     console.log(que)
                     con.query(que, function (err, rideResult) {
                       if (err) throw err;
-                      console.log(rideResult.affectedRows + " ride wait-time updated");
+                      // console.log(rideResult.affectedRows + " ride wait-time updated");
                       io.sockets.emit('updateTime');
                     });
                   }
                 }
               }
             }, (err) => {
-              console.log("No ride to add")
+              // console.log("No ride to add")
             })
           });
         } else {
@@ -107,11 +104,11 @@ var callParks = function () {
                 var sql = "INSERT INTO tbl_ride(park_id,ride_name,ride_wait_time) VALUES ('" + element.park_id + "','" + ride.name.replace(/[^\w\s]/gi, '') + "','" + ride.waitTime + "')";
                 con.query(sql, function (err, result) {
                   if (err) throw err;
-                  console.log(result.affectedRows + " record(s) inserted");
+                  // console.log(result.affectedRows + " record(s) inserted");
                 });
               }
             }, (err) => {
-              console.log("No ride found")
+              // console.log("No ride found")
             })
           });
         }
