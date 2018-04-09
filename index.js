@@ -1,9 +1,6 @@
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
 var Themeparks = require("themeparks");
 var express = require('express');
 var bodyParser = require('body-parser')
-var Themeparks = require("themeparks");
 var mysql = require('mysql');
 var router = express.Router()
 
