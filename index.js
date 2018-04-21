@@ -12,12 +12,12 @@ var moment = require('moment')
 // SQL Connection
 var con = mysql.createConnection({
   host: "localhost",
-  // user: "dpwt",
-  // password: "2XJw$!G&Lsup5fG",
-  // database: "disneyparkswaitingtimes"
-  user: "root",
-  password: "",
-  database: "themepark"
+  user: "dpwt",
+  password: "2XJw$!G&Lsup5fG",
+  database: "disneyparkswaitingtimes"
+  // user: "root",
+  // password: "",
+  // database: "themepark"
 });
 
 con.connect(function (err) {
