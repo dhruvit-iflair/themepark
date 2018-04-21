@@ -7,13 +7,17 @@ var router = express.Router()
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var moment = require('moment')
 
 // SQL Connection
 var con = mysql.createConnection({
   host: "localhost",
-  user: "dpwt",
-  password: "2XJw$!G&Lsup5fG",
-  database: "disneyparkswaitingtimes"
+  // user: "dpwt",
+  // password: "2XJw$!G&Lsup5fG",
+  // database: "disneyparkswaitingtimes"
+  user: "root",
+  password: "",
+  database: "themepark"
 });
 
 con.connect(function (err) {
@@ -27,6 +31,70 @@ app.locals.moment = require('moment')
 app.set('views', './views')
 app.set('view engine', 'pug');
 
+var something = (function () {
+
+  var executed = false;
+  return function () {
+    if (!executed) {
+      console.log("1")
+      var now = moment().format("YYYY/MM/DD")
+      executed = true;
+      // Update data
+      var query = "SELECT * FROM tbl_park WHERE park_name LIKE '%Disney%'";
+      con.query(query, (err, result) => {
+        if (err) return console.log(err);
+        if (result.length > 0) {
+          var r = []
+          var all = [];
+
+          for (var park in Themeparks.Parks) {
+            if (result.findIndex(x => x.park_apiname == park) > -1) {
+              var data = new Themeparks.Parks[park]();
+              var replacestring = data.Name.replace("'", "");
+              r.push(data)
+            }
+          }
+
+          r.forEach((re) => {
+            var o = '';
+            var c = '';
+            re.GetOpeningTimes().then(function (open) {
+              if (moment(open[0].openingTime).format('YYYY/MM/DD') === now) {
+                // console.log("Nothing")
+                // io.sockets.emit('updatePark');
+                return false
+                // callParks()
+              } else if (moment(open[0].openingTime).format('YYYY/MM/DD') < now) {
+                var up = "UPDATE tbl_park SET park_opening_time = '" + open[1].openingTime + "',park_closing_time = '" + open[1].closingTime + "', park_type = '" + open[1].type + "' WHERE park_name = '" + re.Name.replace("'", "") + "'";
+                // console.log(up)
+                con.query(up, function (err, result) {
+                  if (err) throw err;
+                  io.sockets.emit('updatePark');
+                  // console.log("1 row updated")
+                });
+              } else {
+                var up = "UPDATE tbl_park SET park_opening_time = '" + open[0].openingTime + "',park_closing_time = '" + open[0].closingTime + "', park_type = '" + open[0].type + "' WHERE park_name = '" + re.Name.replace("'", "") + "'";
+                // console.log(up)
+                con.query(up, function (err, result) {
+                  if (err) throw err;
+                  io.sockets.emit('updatePark');
+                  // console.log("1 record updated");
+                });
+              }
+
+            }, (err) => {
+              // console.log("Error updating parks :: " + err)
+              io.sockets.emit('updatePark');
+            })
+          })
+
+        } else {
+          console.log("NO DATA found")
+        }
+      })
+    }
+  }
+})();
 
 app.get('/', function (req, res) {
   var all = []
@@ -34,10 +102,10 @@ app.get('/', function (req, res) {
   con.query(query, function (err, result) {
     if (err) return console.log("Error fetching rides");
     con.query("SELECT park_id from tbl_ride", function (err, rides) {
-      if (err) return console.log('No rides')
+      if (err) return err
       rides.forEach(element => {
         if (all.indexOf(element.park_id) === -1) {
-          all.push(element.park_id)
+          all.push(element.park_id);
         }
       });
       res.render('parks', {
@@ -46,6 +114,7 @@ app.get('/', function (req, res) {
       })
     })
   })
+
 });
 
 app.get('/ride/:id', function (req, res) {
@@ -55,12 +124,15 @@ app.get('/ride/:id', function (req, res) {
     res.render('rides', {
       docs: result
     })
+    // callParks()
   })
 })
 
 var callParks = function () {
+  console.log("MATER")
+  // io.sockets.emit('updatePark');
   con.query("SELECT * FROM tbl_park", function (err, result, fields) {
-    if (err) return err;
+    if (err) return console.log("1st :: " + err);
     if (result.length > 0) {
       con.query('SELECT * FROM tbl_ride', (err, rideData) => {
         if (err) return err;
@@ -80,7 +152,7 @@ var callParks = function () {
                 } else {
                   if (rideData[index].ride_wait_time != ride.waitTime) {
                     var que = "UPDATE tbl_ride SET ride_wait_time = " + (isNaN(ride.waitTime) ? 0 : ride.waitTime) + " WHERE ride_id =" + rideData[index].ride_id;
-                    console.log(que)
+                    // console.log(que)
                     con.query(que, function (err, rideResult) {
                       if (err) throw err;
                       // console.log(rideResult.affectedRows + " ride wait-time updated");
@@ -90,6 +162,7 @@ var callParks = function () {
                 }
               }
             }, (err) => {
+
               // console.log("No ride to add")
             })
           });
@@ -115,8 +188,13 @@ var callParks = function () {
   });
 }
 
+something();
 callParks();
-setInterval(callParks, 300000);
+setInterval(callParks, 100000)
+// setInterval(function () {
+//   callParks();
+//   // io.sockets.emit('updatePark');
+// }, 100000);
 
 http.listen(3000, () => {
   console.log('Listening on *:3000')
