@@ -28,11 +28,11 @@ html
                             if(doc.park_opening_time == null)
                                 td  N/A
                             else
-                                td=  moment(doc.park_opening_time).format('DD.MM.YYYY hh:mm:s')
+                                td=  moment(doc.park_opening_time).format('DD.MM.YYYY HH:mm:ss')
                             if(doc.park_closing_time == null)
                                 td  N/A
                             else
-                                td=  moment(doc.park_closing_time).format('DD.MM.YYYY hh:mm:s')
+                                td=  moment(doc.park_closing_time).format('DD.MM.YYYY HH:mm:ss')
                             td
                                 if(~rides.indexOf(doc.park_id))
                                     a(href="/ride/"+doc.park_id) Get Rides

@@ -10,19 +10,21 @@ for (var park in Themeparks.Parks) {
 var disneyMagicKingdom = new Themeparks.Parks.WaltDisneyWorldMagicKingdom();
 
 // access wait times by Promise
-disneyMagicKingdom.GetWaitTimes().then(function(rides) {
+disneyMagicKingdom.GetWaitTimes().then(function (rides) {
     // print each wait time
-    for(var i=0, ride; ride=rides[i++];) {
-        console.log(ride.name + ": " + ride.waitTime + " minutes wait");
+    for (var i = 0, ride; ride = rides[i++];) {
+        console.log(ride.name + " :: " + ride.waitTime);
     }
 }, console.error);
 
 // get park opening times
-disneyMagicKingdom.GetOpeningTimes().then(function(times) {
+disneyMagicKingdom.GetOpeningTimes().then(function (times) {
     // print opening times
-    for(var i=0, time; time=times[i++];) {
+    for (var i = 0, time; time = times[i++];) {
         if (time.type == "Operating") {
             console.log("[" + time.date + "] Open from " + time.openingTime + " until " + time.closingTime);
+        } else {
+            console.log("Park closed")
         }
     }
 }, console.error);

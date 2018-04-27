@@ -12,12 +12,12 @@ var moment = require('moment')
 // SQL Connection
 var con = mysql.createConnection({
   host: "localhost",
-  user: "dpwt",
-  password: "2XJw$!G&Lsup5fG",
-  database: "disneyparkswaitingtimes"
-  // user: "root",
-  // password: "",
-  // database: "themepark"
+  // user: "dpwt",
+  // password: "2XJw$!G&Lsup5fG",
+  // database: "disneyparkswaitingtimes"
+  user: "root",
+  password: "",
+  database: "themepark"
 });
 
 con.connect(function (err) {
@@ -45,7 +45,6 @@ var something = function () {
     if (result.length > 0) {
       var r = []
       var all = [];
-
       for (var park in Themeparks.Parks) {
         if (result.findIndex(x => x.park_apiname == park) > -1) {
           var data = new Themeparks.Parks[park]();
@@ -54,22 +53,30 @@ var something = function () {
         }
       }
 
-      r.forEach((re) => {
+      r.forEach((re, index) => {
         var o = '';
         var c = '';
+        var id = '';
         re.GetOpeningTimes().then(function (open) {
           var index = result.findIndex(x => x.park_name == re.Name)
           if (index > -1) {
-            if (open[0].openingTime > result[index].park_opening_time) {
-              if (open[0].openingTime < new Date) {
-                var up = "UPDATE tbl_park SET park_opening_time = '" + open[1].openingTime + "',park_closing_time = '" + open[1].closingTime + "', park_type = '" + open[1].type + "' WHERE park_name = '" + re.Name.replace("'", "") + "'";
+            if (open[0].openingTime >= result[index].park_opening_time) {
+              id = result[index].park_id
+              if (new Date(open[0].openingTime).getTime() > new Date().getTime()) {
+                // console.log("IF :: " + index + " :: " + re.Name)
+                console.log("IF1 :: " + id + " " + open[0].openingTime)
+                console.log("IF2 :: " + id + " " + open[1].openingTime)
+                var up = "UPDATE tbl_park SET park_opening_time = '" + open[0].openingTime + "',park_closing_time = '" + open[0].closingTime + "', park_type = '" + open[0].type + "' WHERE park_name = '" + re.Name.replace("'", "") + "'";
                 con.query(up, function (err, result) {
                   if (err) throw err;
                   // console.log("1 updated")
                   io.sockets.emit('updatePark');
                 });
               } else {
-                var up = "UPDATE tbl_park SET park_opening_time = '" + open[0].openingTime + "',park_closing_time = '" + open[0].closingTime + "', park_type = '" + open[0].type + "' WHERE park_name = '" + re.Name.replace("'", "") + "'";
+                console.log("ELSE1 :: " + id + " " + open[0].openingTime)
+                console.log("ELSE2 :: " + id + " " + open[1].openingTime)
+                // console.log("ELSE :: " + index + " :: " + re.Name)
+                var up = "UPDATE tbl_park SET park_opening_time = '" + open[1].openingTime + "',park_closing_time = '" + open[1].closingTime + "', park_type = '" + open[1].type + "' WHERE park_name = '" + re.Name.replace("'", "") + "'";
                 con.query(up, function (err, result) {
                   if (err) throw err;
                   // console.log("1 updatedd")
@@ -77,7 +84,7 @@ var something = function () {
                 });
               }
             } else {
-              // console.log("All up to date")
+              console.log("End of Time")
               io.sockets.emit('updatePark');
             }
           }
@@ -90,9 +97,10 @@ var something = function () {
             if (rideData.length > 0) {
               re.GetWaitTimes().then((rides) => {
                 for (var j = 0, ride; ride = rides[j++];) {
+                  // console.log("MY ID :: " + id)
                   var index = rideData.findIndex(x => x.ride_name.replace(/[^\w\s]/gi, '') == ride.name.replace(/[^\w\s]/gi, ''))
                   if (index < 0) {
-                    var sql = "INSERT INTO tbl_ride(park_id,ride_name,ride_wait_time) VALUES ('" + element.park_id + "','" + ride.name.replace(/[^\w\s]/gi, '') + "','" + ride.waitTime + "')";
+                    var sql = "INSERT INTO tbl_ride(park_id,ride_name,ride_wait_time) VALUES ('" + id + "','" + ride.name.replace(/[^\w\s]/gi, '') + "','" + ride.waitTime + "')";
                     con.query(sql, function (err, result) {
                       if (err) throw err;
                       // console.log(result.affectedRows + " rides(s) added");
@@ -118,7 +126,8 @@ var something = function () {
               // result.forEach(element => {
               re.GetWaitTimes().then((rides) => {
                 for (var j = 0, ride; ride = rides[j++];) {
-                  var sql = "INSERT INTO tbl_ride(park_id,ride_name,ride_wait_time) VALUES ('" + element.park_id + "','" + ride.name.replace(/[^\w\s]/gi, '') + "','" + ride.waitTime + "')";
+                  console.log(ride)
+                  var sql = "INSERT INTO tbl_ride(park_id,ride_name,ride_wait_time) VALUES ('" + id + "','" + ride.name.replace(/[^\w\s]/gi, '') + "','" + ride.waitTime + "')";
                   con.query(sql, function (err, result) {
                     if (err) throw err;
                     // console.log(result.affectedRows + " record(s) inserted");
